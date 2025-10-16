@@ -17,13 +17,14 @@ jobs:
       - name: 📚 Checkout code
         uses: actions/checkout@v3
 
-      - name: 🐦 Set up Dart
-        uses: dart-lang/setup-dart@v1
+      - name: 🐦 Set up Flutter
+        uses: flutter-actions/setup-flutter@v3.6
         with:
-          sdk: stable
+          channel: stable
+          version: latest
 
       - name: 📦 Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: 🔍 Dart Analyze
         uses: ValentinVignal/action-dart-analyze@v0.17
