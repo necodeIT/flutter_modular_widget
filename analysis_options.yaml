@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+
+linter:
+  rules:
+    public_member_api_docs: true
+    package_prefixed_library_names: true
+    library_private_types_in_public_api: true
+    package_names: true
+    lines_longer_than_80_chars: false
+    sort_pub_dependencies: true
+    join_return_with_assignment: true
+    prefer_for_elements_to_map_fromIterable: true
+    null_check_on_nullable_type_parameter: true
+    enable_null_safety: true

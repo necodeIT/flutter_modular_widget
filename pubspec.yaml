@@ -1,0 +1,32 @@
+name: flutter_modular_widget
+description: "A base class for Flutter widgets that depend on multiple Modular repositories."
+version: 0.0.1
+publish_to: none
+repository: https://github.com/necodeIT/flutter_modular_widget
+
+environment:
+  sdk: ^3.8.1
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_modular: ^6.3.4
+  mcquenji_core:
+    git:
+      url: https://github.com/mcquenji/mcquenji_core.git
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+dependency_overrides:
+  flutter_modular:
+    git:
+      url: https://github.com/necodeIT/modular.git
+      path: flutter_modular
+  modular_core:
+    git:
+      url: https://github.com/necodeIT/modular.git
+      path: modular_core
