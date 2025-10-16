@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="flutter_modular_widget API docs, for the Dart programming language.">
+  <title>flutter_modular_widget - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li class="self-crumb">flutter_modular_widget package</li>
+  </ol>
+  <div class="self-name">flutter_modular_widget</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="flutter_modular_widget">flutter_modular_widget</h1>
+<p>A tiny base layer for Flutter screens that depend on multiple <strong>Modular</strong> repositories.
+It wires your UI to repositories from <a href="https://github.com/mcquenji/mcquenji_core"><code>mcquenji_core</code></a> / <code>flutter_modular</code>, handles <strong>loading/error</strong> states for you, and gives you a clean place to <strong>derive view data</strong> before building.</p>
+<h2 id="-what-you-get">✨ What you get</h2>
+<ul>
+<li><strong>Declarative dependencies</strong> — declare which repositories your screen needs by <em>watching</em> them inside <code>query</code>.</li>
+<li><strong>Built-in loading &amp; error UI</strong> — if any watched repo is loading you get <code>buildLoader()</code>, if any errored you get <code>buildError(error)</code>.</li>
+<li><strong>Derived view model</strong> — compute and pass a typed <code>T</code> into your content widget once all repos are healthy.</li>
+<li><strong>Non-reactive access in build</strong> — use <code>get&lt;MyRepo&gt;()</code> inside <code>buildContent</code> for event handlers, helpers, etc.</li>
+<li><strong>Optional local state</strong> — mix in <code>StatefulContent</code> to keep widget-local state in a familiar <code>State</code> subclass (<code>ModularState&lt;T&gt;</code>).</li>
+</ul>
+<h2 id="-install">📦 Install</h2>
+<pre class="language-yaml"><code class="language-yaml">dependencies:
+  flutter_modular_widget:
+    git:
+      url: https://github.com/necodeIT/flutter_modular_widget
+  flutter_modular: ^6.3.4
+  mcquenji_core:
+    git:
+      url: https://github.com/mcquenji/mcquenji_core.git
+</code></pre>
+<blockquote>
+<p>The package expects <strong>repositories</strong> from <code>mcquenji_core</code> (which expose an <code>AsyncValue</code> state) to be registered in your Modular graph.</p>
+</blockquote>
+<h2 id="-core-concepts">🧠 Core concepts</h2>
+<ul>
+<li><strong>Repository</strong>: a piece of business logic (from <code>mcquenji_core</code>) whose <code>state</code> is an <code>AsyncValue</code> (<code>loading / data / error</code>).</li>
+<li><strong>watch<r extends="" repository="">()</r></strong>: declare a reactive dependency on a repo in <code>query</code>. The screen will rebuild when that repo’s state changes.</li>
+<li><strong>get<r extends="" repository="">()</r></strong>: fetch a repo <strong>non-reactively</strong> (use in <code>buildContent</code> for callbacks, methods, etc.).</li>
+<li><strong>query() -&gt; FutureOr<t></t></strong>: derive your view data <code>T</code> from watched repositories. Runs once all watched repos are ready; re-runs when any of them changes. It is safe to throw here; the error will be caught and passed to <code>buildError</code>.</li>
+<li><strong>buildLoader / buildError / buildContent</strong>: the three render phases that <code>ModularWidget&lt;T&gt;</code> manages for you.</li>
+<li><strong>StatefulContent + ModularState</strong>: opt-in mixin to keep local widget state while still receiving the derived <code>T</code> and the <code>get</code> accessor.</li>
+</ul>
+<h2 id="-quick-start">🚀 Quick start</h2>
+<pre class="language-dart"><code class="language-dart">import 'package:flutter/widgets.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:mcquenji_core/mcquenji_core.dart';
+import 'package:flutter_modular_widget/modular_widget.dart';
+
+/// Example repositories
+class UserRepo extends Repository&lt;AsyncValue&lt;User&gt;&gt; { /* ... */ }
+class SettingsRepo extends Repository&lt;AsyncValue&lt;Settings&gt;&gt; { /* ... */ }
+
+/// The screen’s derived view data
+class MyViewData {
+  final User user;
+  final Settings settings;
+  const MyViewData(this.user, this.settings);
+}
+
+class MyScreen extends ModularWidget&lt;MyViewData&gt; with StatefulContent&lt;MyViewData&gt; {
+  // 1) Show while any watched repo is loading
+  @override
+  Widget buildLoader(BuildContext context) =&gt; const Center(child: Text('Loading…'));
+
+  // 2) Show when any watched repo errors
+  @override
+  Widget buildError(BuildContext context, Object error) =&gt;
+      Center(child: Text('Oops: $error'));
+
+  // 3) Derive view data once repos are healthy (declare deps here!)
+  @override
+  FutureOr&lt;MyViewData&gt; query&lt;R extends Repository&gt;(R Function&lt;R extends Repository&gt;() watch) async {
+    final userRepo = watch&lt;UserRepo&gt;();        // reactive
+    final settingsRepo = watch&lt;SettingsRepo&gt;(); // reactive
+
+    final user = (await userRepo.state.requireData);
+    final settings = (await settingsRepo.state.requireData);
+
+    return MyViewData(user, settings);
+  }
+
+  // 4) Build the actual UI
+  @override
+  Widget buildContent(
+    BuildContext context,
+    MyViewData data,
+    R Function&lt;R extends Repository&gt;() get, // non-reactive accessor
+  ) {
+    final userRepo = get&lt;UserRepo&gt;(); // for actions/callbacks, not reactive
+    return Column(
+      children: [
+        Text('Hello, ${data.user.name}'),
+        ElevatedButton(
+          onPressed: () =&gt; userRepo.refresh(), // example side-effect
+          child: const Text('Refresh'),
+        ),
+      ],
+    );
+  }
+
+  // 5) (Optional) Keep local widget state
+  @override
+  ModularState&lt;MyViewData&gt; createContentState() =&gt; _MyScreenState();
+}
+
+class _MyScreenState extends ModularState&lt;MyViewData&gt; {
+  // Local UI state (text controllers, animations, focus nodes, etc.)
+  @override
+  Widget build(BuildContext context) {
+    final data = widget.data;                   // derived MyViewData
+    final settings = widget.get&lt;SettingsRepo&gt;(); // non-reactive access
+    // Compose additional UI here if you prefer keeping it in a State subclass
+    return Container(); // or return null and keep all UI in buildContent above
+  }
+}
+</code></pre>
+<h2 id="-lifecycle--reactivity">🔄 Lifecycle &amp; reactivity</h2>
+<ul>
+<li>
+<p>On first build, <code>ModularWidget</code> subscribes to every repository you <strong>watch</strong> in <code>query</code>.</p>
+</li>
+<li>
+<p>If <strong>any watched repo</strong> is <code>loading</code>, you get <code>buildLoader</code>.</p>
+</li>
+<li>
+<p>If <strong>any watched repo</strong> is in <code>error</code>, you get <code>buildError(error)</code> (first error wins).</p>
+</li>
+<li>
+<p>Once <strong>all watched repos</strong> are ready, <code>query</code> runs to produce <code>T</code>, then <code>buildContent</code> renders with that <code>T</code>.</p>
+</li>
+<li>
+<p>On later changes, if any watched repo’s state changes, <code>query</code> runs again and the widget rebuilds accordingly.</p>
+</li>
+<li>
+<p>Subscriptions are disposed automatically.</p>
+</li>
+<li>
+<p><strong>Declare all dependencies in <code>query</code> using <code>watch</code></strong>. Don’t call <code>get</code> in <code>query</code> (that would be non-reactive).</p>
+</li>
+<li>
+<p><strong>Keep <code>buildContent</code> pure</strong>. Use <code>get</code> only for callbacks, methods, or one-off, non-reactive reads.</p>
+</li>
+<li>
+<p><strong>Short-circuit heavy work</strong>: if you need expensive mapping, do it in <code>query</code> and pass the result down.</p>
+</li>
+<li>
+<p><strong>Local UI state?</strong> Use <code>with StatefulContent</code> and a <code>ModularState&lt;T&gt;</code> to keep animations, controllers, etc.</p>
+</li>
+<li>
+<p><strong>Error/Loading precedence</strong>: error beats loading; otherwise loading beats content.</p>
+</li>
+</ul>
+<pre class="language-dart"><code class="language-dart">abstract class ModularWidget&lt;T&gt; extends StatefulWidget {
+  const ModularWidget({super.key});
+
+  // Render phases
+  Widget buildLoader(BuildContext context);
+  Widget buildError(BuildContext context, Object error);
+  Widget buildContent(
+    BuildContext context,
+    T data,
+    R Function&lt;R extends Repository&gt;() get,
+  );
+
+  // Declare reactive dependencies &amp; derive view data
+  FutureOr&lt;T&gt; query(R Function&lt;R extends Repository&gt;() watch);
+}
+</code></pre>
+<p>Optional local state:</p>
+<pre class="language-dart"><code class="language-dart">mixin StatefulContent&lt;T&gt; on ModularWidget&lt;T&gt; {
+  ModularState&lt;T&gt; createContentState(); // provide your State subclass
+}
+
+typedef ModularState&lt;T&gt; = State&lt;StatefulModularWidget&lt;T&gt;&gt;;
+</code></pre>
+<h2 id="-faq">🙋 FAQ</h2>
+<p><strong>Q: How are errors “resolved”?</strong>
+When a previously errored repository transitions to a non-error state, the screen will leave <code>buildError</code> automatically and re-evaluate <code>query</code>. You don’t need to track which repo failed; subscriptions handle that.</p>
+<p><strong>Q: Can I mix <code>watch</code> and <code>get</code>?</strong>
+Yes. Use <code>watch</code> inside <code>query</code> (reactive). Use <code>get</code> inside <code>buildContent</code> or your <code>ModularState</code> for callbacks and helpers (non-reactive).</p>
+<p><strong>Q: Do I need <code>StatefulContent</code>?</strong>
+Only if you want local UI state (animations, controllers, etc.). Otherwise, keep everything in <code>buildContent</code>.</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="flutter_modular_widget">
+  <span class="name"><a href="flutter_modular_widget/">flutter_modular_widget</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+        </dl>
+      </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li class="self-crumb">flutter_modular_widget package</li>
+</ol>
+
+    <h5 class="hidden-xs"><span class="package-name">flutter_modular_widget</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="flutter_modular_widget/">flutter_modular_widget</a></li>
+</ol>
+
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+</main>
+<footer>
+  <span class="no-break">
+    flutter_modular_widget
+      0.0.1
+  </span>
+  
+</footer>
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
