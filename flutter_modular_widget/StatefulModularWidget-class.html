@@ -134,7 +134,7 @@ class _MyScreenState extends ModularState&lt;MyData&gt; {
     <h2>Constructors</h2>
     <dl class="constructor-summary-list">
         <dt id="StatefulModularWidget.new" class="callable">
-          <span class="name"><a href="../flutter_modular_widget/StatefulModularWidget/StatefulModularWidget.html">StatefulModularWidget.new</a></span><span class="signature">(<span class="parameter" id="-param-_createContentState"><span class="type-annotation"><a href="../flutter_modular_widget/ModularState.html">ModularState</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">_createContentState</span>(), {</span><span class="parameter" id="-param-key"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/foundation/Key-class.html">Key</a>?</span> <span class="parameter-name">key</span>, </span><span class="parameter" id="-param-data"><span>required</span> <span class="type-annotation">T</span> <span class="parameter-name">data</span>, </span><span class="parameter" id="-param-get"><span>required</span> <span class="type-annotation">R</span> <span class="parameter-name">get</span>&lt;<wbr><span class="type-parameter">R extends Repository</span>&gt;()</span>})</span>
+          <span class="name"><a href="../flutter_modular_widget/StatefulModularWidget/StatefulModularWidget.html">StatefulModularWidget.new</a></span><span class="signature">(<span class="parameter" id="-param-_createContentState"><span class="type-annotation"><a href="../flutter_modular_widget/ModularState.html">ModularState</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">_createContentState</span>(), {</span><span class="parameter" id="-param-key"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/foundation/Key-class.html">Key</a>?</span> <span class="parameter-name">key</span>, </span><span class="parameter" id="-param-data"><span>required</span> <span class="type-annotation">T</span> <span class="parameter-name">data</span>, </span><span class="parameter" id="-param-get"><span>required</span> <span class="type-annotation"><a href="../flutter_modular_widget/RepoAccessor.html">RepoAccessor</a></span> <span class="parameter-name">get</span></span>})</span>
         </dt>
         <dd>
           Creates a stateful host for content of a <a href="../flutter_modular_widget/ModularWidget-class.html">ModularWidget</a>.
@@ -163,7 +163,7 @@ into the content state for rendering.
 
         <dt id="get" class="property">
   <span class="name"><a href="../flutter_modular_widget/StatefulModularWidget/get.html">get</a></span>
-  <span class="signature">&#8594; R Function&lt;<wbr><span class="type-parameter">R extends Repository</span>&gt;<span class="signature">()</span></span>
+  <span class="signature">&#8594; <a href="../flutter_modular_widget/RepoAccessor.html">RepoAccessor</a></span>
   
 
 </dt>

@@ -57,7 +57,7 @@
 <span class="returntype"><a href="https://api.flutter.dev/flutter/widgets/Widget-class.html">Widget</a></span>
 <span class="name ">buildContent</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="buildContent-param-context"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a></span> <span class="parameter-name">context</span>, </span></li>
 <li><span class="parameter" id="buildContent-param-data"><span class="type-annotation">T</span> <span class="parameter-name">data</span>, </span></li>
-<li><span class="parameter" id="buildContent-param-get"><span class="type-annotation">R</span> <span class="parameter-name">get</span>&lt;<wbr><span class="type-parameter">R extends Repository</span>&gt;()</span></li>
+<li><span class="parameter" id="buildContent-param-get"><span class="type-annotation"><a href="../../flutter_modular_widget/RepoAccessor.html">RepoAccessor</a></span> <span class="parameter-name">get</span></span></li>
 </ol>)
 
       
@@ -76,11 +76,7 @@ repository changes.</p>
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Widget buildContent(
-  BuildContext context,
-  T data,
-  R Function&lt;R extends Repository&gt;() get,
-);</code></pre>
+  <pre class="language-dart"><code class="language-dart">Widget buildContent(BuildContext context, T data, RepoAccessor get);</code></pre>
 </section>
 
 

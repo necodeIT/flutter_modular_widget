@@ -63,7 +63,7 @@
 <span class="returntype"><a href="https://api.flutter.dev/flutter/widgets/Widget-class.html">Widget</a></span>
 <span class="name ">buildContent</span>(<wbr><ol class="parameter-list single-line"> <li><span class="parameter" id="buildContent-param-context"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/widgets/BuildContext-class.html">BuildContext</a></span> <span class="parameter-name">context</span>, </span></li>
 <li><span class="parameter" id="buildContent-param-data"><span class="type-annotation">T</span> <span class="parameter-name">data</span>, </span></li>
-<li><span class="parameter" id="buildContent-param-get"><span class="type-annotation">R</span> <span class="parameter-name">get</span>&lt;<wbr><span class="type-parameter">R extends Repository</span>&gt;()</span></li>
+<li><span class="parameter" id="buildContent-param-get"><span class="type-annotation"><a href="../../flutter_modular_widget/RepoAccessor.html">RepoAccessor</a></span> <span class="parameter-name">get</span></span></li>
 </ol>)
 
       <div class="features"><span class="feature">override</span></div>
@@ -84,18 +84,15 @@ repository changes.</p>
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
 @nonVirtual
-Widget buildContent(
-  BuildContext context,
-  T data,
-  R Function&lt;R extends Repository&gt;() get,
-) =&gt; StatefulModularWidget&lt;T&gt;(
-  createContentState,
-  data: data,
-  get: get,
-  &#47;&#47; If your content’s identity should follow `data`, provide a key here.
-  &#47;&#47; This is useful when you need to reset local state for new data sets.
-  key: contentKey(data),
-);</code></pre>
+Widget buildContent(BuildContext context, T data, RepoAccessor get) =&gt;
+    StatefulModularWidget&lt;T&gt;(
+      createContentState,
+      data: data,
+      get: get,
+      &#47;&#47; If your content’s identity should follow `data`, provide a key here.
+      &#47;&#47; This is useful when you need to reset local state for new data sets.
+      key: contentKey(data),
+    );</code></pre>
 </section>
 
 
