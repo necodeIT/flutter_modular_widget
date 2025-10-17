@@ -27,7 +27,7 @@ abstract class ModularWidget<T> extends StatefulWidget {
   ///
   /// The [error] is the first encountered error from a watched repository’s
   /// `AsyncValue` or from [query] itself.
-  Widget buildError(BuildContext context, Object error);
+  Widget buildError(BuildContext context, Object error, StackTrace? stackTrace);
 
   /// Build shown when all watched repositories are healthy and [query] has
   /// produced [data].
@@ -35,11 +35,7 @@ abstract class ModularWidget<T> extends StatefulWidget {
   /// The [get] callback allows **non-reactive** access to repositories, i.e.
   /// it is equivalent to `Modular.get<R>()` and does **not** subscribe to
   /// repository changes.
-  Widget buildContent(
-    BuildContext context,
-    T data,
-    R Function<R extends Repository>() get,
-  );
+  Widget buildContent(BuildContext context, T data, RepoAccessor get);
 
   /// Derive the view data from repositories.
   ///
@@ -48,7 +44,7 @@ abstract class ModularWidget<T> extends StatefulWidget {
   /// trigger re-computation.
   ///
   /// May return data synchronously or asynchronously.
-  FutureOr<T> query(R Function<R extends Repository>() watch);
+  FutureOr<T> query(RepoAccessor watch);
 
   @override
   State<ModularWidget<T>> createState() => _ModularWidgetState<T>();
@@ -65,26 +61,10 @@ class _ModularWidgetState<T> extends State<ModularWidget<T>> {
   /// Used for efficient iteration when checking loading/error states.
   final Set<Repository> _watched = {};
 
-  /// The most recent error coming from a watched repository or from [_refresh].
-  Object? _error;
-
-  /// The latest successfully derived data from [ModularWidget.query].
-  T? _data;
-
-  /// Whether the UI should currently show the loader.
-  ///
-  /// This is set when *any* watched repository reports `isLoading` on its
-  /// `AsyncValue` or while initial data is being computed.
-  bool _loading = false;
+  AsyncValue<T> _state = AsyncValue<T>.loading();
 
   /// Guard to prevent concurrent executions of [_refresh].
   bool _isRefreshing = false;
-
-  /// Indicates that a refresh has been scheduled for the next frame to avoid
-  /// re-entrancy during build/layout.
-  bool _refreshQueued = false;
-
-  // --- dependency tracking ---
 
   /// Watch (and obtain) a repository of type [R].
   ///
@@ -95,6 +75,7 @@ class _ModularWidgetState<T> extends State<ModularWidget<T>> {
   /// Use this exclusively inside [ModularWidget.query] to **declare** dependencies.
   R _watch<R extends Repository>() {
     final repo = Modular.get<R>();
+
     if (!_watched.contains(repo)) {
       _watched.add(repo);
       _subs.add(repo.stream.listen((_) => _onRepoChanged()));
@@ -140,35 +121,22 @@ class _ModularWidgetState<T> extends State<ModularWidget<T>> {
 
     if (repoError != null) {
       setState(() {
-        _error = repoError;
-        _loading = false;
+        _state = AsyncValue<T>.error(repoError!);
       });
       return;
     }
 
     if (anyLoading) {
       setState(() {
-        _error = null;
-        _loading = true;
+        _state = AsyncValue<T>.loading();
       });
       return;
     }
 
-    // Healthy: clear flags and schedule a refresh if needed.
-    setState(() {
-      _error = null;
-      _loading = false;
-    });
-
-    if (_isRefreshing || _refreshQueued) return;
-    _refreshQueued = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refresh();
-      _refreshQueued = false;
-    });
+    _refresh();
   }
 
-  /// Re-compute [_data] by invoking [widget.query] with [_watch].
+  /// Re-compute [_data] by invoking [widget.query] with [_get].
   ///
   /// Safeguards:
   /// - Returns early when the widget is unmounted.
@@ -180,45 +148,40 @@ class _ModularWidgetState<T> extends State<ModularWidget<T>> {
   Future<void> _refresh() async {
     if (!mounted) return;
     if (_isRefreshing) return;
-    if (_loading) return;
-    if (_error != null) return;
 
     _isRefreshing = true;
 
-    try {
-      final result = await widget.query(_watch);
-      if (!mounted) return;
-      setState(() {
-        _data = result;
-        _error = null;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e;
-        _loading = false;
-      });
-    }
+    _state = await AsyncValue.guard(() => widget.query(_watch));
 
     _isRefreshing = false;
+    if (mounted) setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
 
+    _init();
+  }
+
+  void _init() async {
     // 1) Establish dependencies by running query once with [_watch].
     //    This registers all repositories that the screen depends on.
-    widget.query(_watch);
+    try {
+      final data = await widget.query(_watch);
 
-    // 2) Compute the initial data on the next frame to avoid doing heavy work
-    //    during init/build and to ensure all subscriptions are in place.
-    _refreshQueued = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refresh();
-      _refreshQueued = false;
-    });
+      _state = AsyncValue<T>.data(data);
+    } catch (e) {
+      // Ignore errors here; they will be handled in the next frame.
+    } finally {
+      // 2) Compute the initial data on the next frame to avoid doing heavy work
+      //    during init/build and to ensure all subscriptions are in place.
+      // _refreshQueued = true;
+      // WidgetsBinding.instance.addPostFrameCallback((_) async {
+      //   await _refresh();
+      //   _refreshQueued = false;
+      // });
+    }
   }
 
   @override
@@ -232,8 +195,14 @@ class _ModularWidgetState<T> extends State<ModularWidget<T>> {
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_loading || _data == null) return widget.buildLoader(context);
-    return widget.buildContent(context, _data as T, _get);
+    return _state.when(
+      data: (data) => widget.buildContent(context, data, _get),
+      loading: () => widget.buildLoader(context),
+      error: (error, stackTrace) =>
+          widget.buildError(context, error, stackTrace),
+    );
   }
 }
+
+/// Type alias for a function that retrieves a repository of type [R].
+typedef RepoAccessor = R Function<R extends Repository>();

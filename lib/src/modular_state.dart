@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mcquenji_core/mcquenji_core.dart';
 
 import 'modular_widget.dart';
 
@@ -76,7 +75,7 @@ class StatefulModularWidget<T> extends StatefulWidget {
   ///
   /// Use this from your content `State` for button handlers and
   /// non-listening operations. It **does not** subscribe to repo updates.
-  final R Function<R extends Repository>() get;
+  final RepoAccessor get;
 
   /// Factory for the user’s content [State].
   ///
@@ -111,18 +110,15 @@ class StatefulModularWidget<T> extends StatefulWidget {
 mixin StatefulContent<T> on ModularWidget<T> {
   @override
   @nonVirtual
-  Widget buildContent(
-    BuildContext context,
-    T data,
-    R Function<R extends Repository>() get,
-  ) => StatefulModularWidget<T>(
-    createContentState,
-    data: data,
-    get: get,
-    // If your content’s identity should follow `data`, provide a key here.
-    // This is useful when you need to reset local state for new data sets.
-    key: contentKey(data),
-  );
+  Widget buildContent(BuildContext context, T data, RepoAccessor get) =>
+      StatefulModularWidget<T>(
+        createContentState,
+        data: data,
+        get: get,
+        // If your content’s identity should follow `data`, provide a key here.
+        // This is useful when you need to reset local state for new data sets.
+        key: contentKey(data),
+      );
 
   /// Create the **stateful content** that renders this screen’s body.
   ///
